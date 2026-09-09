@@ -1,0 +1,10 @@
+[package]
+name = "aula-kb-tool"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+iced = "0.14.0"
+serde_json = "1.0.151"
+serde = { version = "1.0.229", features = ["derive"] }
+itertools = "0.15.0"

@@ -1,0 +1,14 @@
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+pub struct RgbData {
+    r: u8,
+    g: u8,
+    b: u8,
+}
+
+impl RgbData {
+    pub fn new(r: u8, g: u8, b: u8) -> Self {
+        Self { r, g, b }
+    }
+}
