@@ -29,6 +29,10 @@ impl DeviceStorage {
         self.key_leds.insert(key_id, RgbData::new(r, g, b));
     }
 
+    pub fn get_key_led(&self, key_id: KeyId) -> Option<&RgbData> {
+        self.key_leds.get(&key_id)
+    }
+
     pub fn flush(&self) -> Result<(), ()> {
         let json = serde_json::to_string_pretty(self).map_err(|_| ())?;
         fs::write("device_storage.json", json).map_err(|_| ())

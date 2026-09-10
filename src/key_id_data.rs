@@ -1,5 +1,6 @@
 use crate::{key_data::KeyData, key_id::KeyId};
 
+#[derive(Clone)]
 pub struct KeyIdData {
     pub id: KeyId,
 
