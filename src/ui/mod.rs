@@ -54,7 +54,11 @@ fn key_button<'a>(key: &'a KeyIdData, device_storage: &'a DeviceStorage) -> Butt
             ..Default::default()
         })
         .height(32)
-        .width(key.width)
+        .width(if let Some(width) = key.width {
+            width.into()
+        } else {
+            Length::Shrink
+        })
         .on_press(Message::OnPressOpenKeyModal(key.clone()))
 }
 
@@ -111,9 +115,10 @@ impl UiShell {
 
         let keys = &self.device_template.keys;
 
-        let column: Element<_> = Column::with_children(keys.iter().map(|row| {
+        let keys_column: Element<_> = Column::with_children(keys.iter().map(|column| {
             let row = Row::with_children(
-                row.iter()
+                column
+                    .iter()
                     .map(|key| key_button(key, &self.device_storage).into()),
             );
             row.spacing(12).into()
@@ -122,7 +127,7 @@ impl UiShell {
         .padding(12)
         .into();
 
-        stack = stack.push(column);
+        stack = stack.push(keys_column);
 
         if let Some(key) = &self.key_modal {
             stack = stack.push(UiShell::key_modal(key, &self.key_led_rgb_hex));

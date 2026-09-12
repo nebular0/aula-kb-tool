@@ -30,17 +30,17 @@ impl DeviceTemplate {
     fn sort_keys(json: DeviceTemplateJson) -> Vec<Vec<KeyIdData>> {
         let keys_vec: Vec<_> = json.keys.iter().collect();
 
-        let rows = keys_vec.iter().into_group_map_by(|f| f.1.row);
+        let column = keys_vec.iter().into_group_map_by(|f| f.1.column);
         let mut keys = Vec::new();
 
-        for row in rows.iter().sorted_by_key(|r| r.0) {
-            let mut whole_col = Vec::new();
+        for row in column.iter().sorted_by_key(|r| r.0) {
+            let mut rows = Vec::new();
 
-            for key in row.1.iter().sorted_by_key(|k| k.1.column) {
-                whole_col.push(KeyIdData::from_key_data(*key.0, key.1));
+            for key in row.1.iter().sorted_by_key(|k| k.1.row) {
+                rows.push(KeyIdData::from_key_data(*key.0, key.1));
             }
 
-            keys.push(whole_col);
+            keys.push(rows);
         }
 
         keys
