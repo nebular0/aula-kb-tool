@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fs};
 
-mod rgb_data;
+pub mod rgb_data;
 use rgb_data::RgbData;
 use serde::{Deserialize, Serialize};
 
@@ -9,12 +9,14 @@ use crate::key_id::KeyId;
 #[derive(Serialize, Deserialize)]
 pub struct DeviceStorage {
     key_leds: HashMap<KeyId, RgbData>,
+    pub color_swatches: Vec<RgbData>,
 }
 
 impl DeviceStorage {
     pub fn new() -> Self {
         Self {
             key_leds: HashMap::new(),
+            color_swatches: Vec::new(),
         }
     }
 
@@ -31,6 +33,10 @@ impl DeviceStorage {
 
     pub fn get_key_led(&self, key_id: KeyId) -> Option<&RgbData> {
         self.key_leds.get(&key_id)
+    }
+
+    pub fn add_color_swatch(&mut self, color: RgbData) {
+        self.color_swatches.push(color);
     }
 
     pub fn flush(&self) -> Result<(), ()> {

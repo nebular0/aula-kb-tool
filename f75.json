@@ -1,0 +1,491 @@
+{
+    "keys": {
+        "27": {
+            "name": "Esc",
+            "row": 0,
+            "column": 0,
+            "led_idx": 0
+        },
+        "112": {
+            "name": "F1",
+            "row": 1,
+            "column": 0,
+            "led_idx": 12
+        },
+        "113": {
+            "name": "F2",
+            "row": 2,
+            "column": 0,
+            "led_idx": 18
+        },
+        "114": {
+            "name": "F3",
+            "row": 3,
+            "column": 0,
+            "led_idx": 24
+        },
+        "115": {
+            "name": "F4",
+            "row": 4,
+            "column": 0,
+            "led_idx": 30
+        },
+        "116": {
+            "name": "F5",
+            "row": 5,
+            "column": 0,
+            "led_idx": 36
+        },
+        "117": {
+            "name": "F6",
+            "row": 6,
+            "column": 0,
+            "led_idx": 42
+        },
+        "118": {
+            "name": "F7",
+            "row": 7,
+            "column": 0,
+            "led_idx": 48
+        },
+        "119": {
+            "name": "F8",
+            "row": 8,
+            "column": 0,
+            "led_idx": 54
+        },
+        "120": {
+            "name": "F9",
+            "row": 9,
+            "column": 0,
+            "led_idx": 60
+        },
+        "121": {
+            "name": "F10",
+            "row": 10,
+            "column": 0,
+            "led_idx": 66
+        },
+        "122": {
+            "name": "F11",
+            "row": 11,
+            "column": 0,
+            "led_idx": 72
+        },
+        "123": {
+            "name": "F12",
+            "row": 12,
+            "column": 0,
+            "led_idx": 78
+        },
+        "35": {
+            "name": "End",
+            "row": 13,
+            "column": 0,
+            "led_idx": 88
+        },
+        "192": {
+            "name": "`",
+            "row": 0,
+            "column": 1,
+            "led_idx": 1
+        },
+        "49": {
+            "name": "1",
+            "row": 1,
+            "column": 1,
+            "led_idx": 7
+        },
+        "50": {
+            "name": "2",
+            "row": 2,
+            "column": 1,
+            "led_idx": 13
+        },
+        "51": {
+            "name": "3",
+            "row": 3,
+            "column": 1,
+            "led_idx": 19
+        },
+        "52": {
+            "name": "4",
+            "row": 4,
+            "column": 1,
+            "led_idx": 25
+        },
+        "53": {
+            "name": "5",
+            "row": 5,
+            "column": 1,
+            "led_idx": 31
+        },
+        "54": {
+            "name": "6",
+            "row": 6,
+            "column": 1,
+            "led_idx": 37
+        },
+        "55": {
+            "name": "7",
+            "row": 7,
+            "column": 1,
+            "led_idx": 43
+        },
+        "56": {
+            "name": "8",
+            "row": 8,
+            "column": 1,
+            "led_idx": 49
+        },
+        "57": {
+            "name": "9",
+            "row": 9,
+            "column": 1,
+            "led_idx": 55
+        },
+        "48": {
+            "name": "0",
+            "row": 10,
+            "column": 1,
+            "led_idx": 61
+        },
+        "189": {
+            "name": "-",
+            "row": 11,
+            "column": 1,
+            "led_idx": 67
+        },
+        "187": {
+            "name": "=",
+            "row": 12,
+            "column": 1,
+            "led_idx": 73
+        },
+        "8": {
+            "name": "Backspace",
+            "row": 13,
+            "column": 1,
+            "led_idx": 79
+        },
+        "46": {
+            "name": "Delete",
+            "row": 14,
+            "column": 1,
+            "led_idx": 85
+        },
+        "9": {
+            "name": "Tab",
+            "row": 0,
+            "column": 2,
+            "led_idx": 2
+        },
+        "81": {
+            "name": "Q",
+            "row": 1,
+            "column": 2,
+            "led_idx": 8
+        },
+        "87": {
+            "name": "W",
+            "row": 2,
+            "column": 2,
+            "led_idx": 14
+        },
+        "69": {
+            "name": "E",
+            "row": 3,
+            "column": 2,
+            "led_idx": 20
+        },
+        "82": {
+            "name": "R",
+            "row": 4,
+            "column": 2,
+            "led_idx": 26
+        },
+        "84": {
+            "name": "T",
+            "row": 5,
+            "column": 2,
+            "led_idx": 32
+        },
+        "89": {
+            "name": "Y",
+            "row": 6,
+            "column": 2,
+            "led_idx": 38
+        },
+        "85": {
+            "name": "U",
+            "row": 7,
+            "column": 2,
+            "led_idx": 44
+        },
+        "73": {
+            "name": "I",
+            "row": 8,
+            "column": 2,
+            "led_idx": 50
+        },
+        "79": {
+            "name": "O",
+            "row": 9,
+            "column": 2,
+            "led_idx": 56
+        },
+        "80": {
+            "name": "P",
+            "row": 10,
+            "column": 2,
+            "led_idx": 62
+        },
+        "219": {
+            "name": "[",
+            "row": 11,
+            "column": 2,
+            "led_idx": 68
+        },
+        "221": {
+            "name": "]",
+            "row": 12,
+            "column": 2,
+            "led_idx": 74
+        },
+        "220": {
+            "name": "\\",
+            "row": 13,
+            "column": 2,
+            "led_idx": 80
+        },
+        "33": {
+            "name": "PgUp",
+            "row": 14,
+            "column": 2,
+            "led_idx": 86
+        },
+        "20": {
+            "name": "CapsLock",
+            "row": 0,
+            "column": 3,
+            "led_idx": 3
+        },
+        "65": {
+            "name": "A",
+            "row": 1,
+            "column": 3,
+            "led_idx": 9
+        },
+        "83": {
+            "name": "S",
+            "row": 2,
+            "column": 3,
+            "led_idx": 15
+        },
+        "68": {
+            "name": "D",
+            "row": 3,
+            "column": 3,
+            "led_idx": 21
+        },
+        "70": {
+            "name": "F",
+            "row": 4,
+            "column": 3,
+            "led_idx": 27
+        },
+        "71": {
+            "name": "G",
+            "row": 5,
+            "column": 3,
+            "led_idx": 33
+        },
+        "72": {
+            "name": "H",
+            "row": 6,
+            "column": 3,
+            "led_idx": 39
+        },
+        "74": {
+            "name": "J",
+            "row": 7,
+            "column": 3,
+            "led_idx": 45
+        },
+        "75": {
+            "name": "K",
+            "row": 8,
+            "column": 3,
+            "led_idx": 51
+        },
+        "76": {
+            "name": "L",
+            "row": 9,
+            "column": 3,
+            "led_idx": 57
+        },
+        "186": {
+            "name": ";",
+            "row": 10,
+            "column": 3,
+            "led_idx": 63
+        },
+        "222": {
+            "name": "'",
+            "row": 11,
+            "column": 3,
+            "led_idx": 69
+        },
+        "13": {
+            "name": "Enter",
+            "row": 12,
+            "column": 3,
+            "led_idx": 81
+        },
+        "160": {
+            "name": "LShift",
+            "row": 0,
+            "column": 4,
+            "led_idx": 4
+        },
+        "90": {
+            "name": "Z",
+            "row": 1,
+            "column": 4,
+            "led_idx": 10
+        },
+        "88": {
+            "name": "X",
+            "row": 2,
+            "column": 4,
+            "led_idx": 16
+        },
+        "67": {
+            "name": "C",
+            "row": 3,
+            "column": 4,
+            "led_idx": 22
+        },
+        "86": {
+            "name": "V",
+            "row": 4,
+            "column": 4,
+            "led_idx": 28
+        },
+        "66": {
+            "name": "B",
+            "row": 5,
+            "column": 4,
+            "led_idx": 34
+        },
+        "78": {
+            "name": "N",
+            "row": 6,
+            "column": 4,
+            "led_idx": 40
+        },
+        "77": {
+            "name": "M",
+            "row": 7,
+            "column": 4,
+            "led_idx": 46
+        },
+        "188": {
+            "name": ",",
+            "row": 8,
+            "column": 4,
+            "led_idx": 52
+        },
+        "190": {
+            "name": ".",
+            "row": 9,
+            "column": 4,
+            "led_idx": 58
+        },
+        "191": {
+            "name": "/",
+            "row": 10,
+            "column": 4,
+            "led_idx": 64
+        },
+        "161": {
+            "name": "RShift",
+            "row": 11,
+            "column": 4,
+            "led_idx": 70
+        },
+        "38": {
+            "name": "Up",
+            "row": 12,
+            "column": 4,
+            "led_idx": 82
+        },
+        "162": {
+            "name": "LCtrl",
+            "row": 0,
+            "column": 5,
+            "led_idx": 5
+        },
+        "91": {
+            "name": "LWin",
+            "row": 1,
+            "column": 5,
+            "led_idx": 11
+        },
+        "164": {
+            "name": "LAlt",
+            "row": 2,
+            "column": 5,
+            "led_idx": 17
+        },
+        "32": {
+            "name": "Space",
+            "width": 226,
+            "row": 3,
+            "column": 5,
+            "led_idx": 35
+        },
+        "163": {
+            "name": "RCtrl",
+            "row": 4,
+            "column": 5,
+            "led_idx": 59
+        },
+        "250": {
+            "name": "FN",
+            "row": 5,
+            "column": 5,
+            "led_idx": 53
+        },
+        "37": {
+            "name": "Left",
+            "row": 6,
+            "column": 5,
+            "led_idx": 77
+        },
+        "40": {
+            "name": "Down",
+            "row": 7,
+            "column": 5,
+            "led_idx": 83
+        },
+        "39": {
+            "name": "Right",
+            "row": 8,
+            "column": 5,
+            "led_idx": 89
+        },
+        "34": {
+            "name": "PgDn",
+            "row": 9,
+            "column": 5,
+            "led_idx": 87
+        },
+        "1": {
+            "name": "Wheel",
+            "row": 10,
+            "column": 5,
+            "led_idx": 84
+        }
+    }
+}

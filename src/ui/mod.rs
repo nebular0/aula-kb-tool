@@ -1,18 +1,28 @@
 use hex_color::HexColor;
 use iced::{
-    Background, Border, Color, Element, Font, Length, Shadow,
+    Background, Border, Color, Element, Font, Length,
     widget::{
-        Button, Column, Row, Stack, button, center, column, container, row, text, text_input,
+        Column, Row, Stack, button, center, column, container, mouse_area, row, text, text_input,
     },
 };
 
 use crate::{
-    device_storage::DeviceStorage, device_template::DeviceTemplate, key_id_data::KeyIdData,
+    device_interface::DeviceInterface,
+    device_storage::{DeviceStorage, rgb_data::RgbData},
+    device_template::DeviceTemplate,
+    key_id::KeyId,
+    key_id_data::KeyIdData,
 };
 
 pub struct UiShell {
     device_storage: DeviceStorage,
     device_template: DeviceTemplate,
+    device_interface: DeviceInterface,
+
+    color_swatches: Vec<Color>,
+    selected_color: Color,
+    swatch_color_rgb_hex: String,
+
     key_modal: Option<KeyIdData>,
     key_led_rgb_hex: String,
 }
@@ -24,31 +34,33 @@ enum Message {
     OnInputKeyLedRgbHex(String),
     OnPressSaveKey,
     OnPressSaveChanges,
+    OnPressApplyChanges,
+    OnPressFillColor(KeyId),
+    OnInputSwatchColorRgbHex(String),
+    OnPressAddSwatchColor,
+    OnPressSelectSwatchColor(Color),
 }
 
 const CONTRAST_THRESHOLD: f64 = 0.2;
 
-fn key_button<'a>(key: &'a KeyIdData, device_storage: &'a DeviceStorage) -> Button<'a, Message> {
+fn key_button<'a>(key: &'a KeyIdData, device_storage: &'a DeviceStorage) -> Element<'a, Message> {
     let maybe_key_led = device_storage.get_key_led(key.id);
 
-    button(center(text(&key.name).size(14)))
+    let button = button(center(text(&key.name).size(14)))
         .style(move |_, _| button::Style {
             background: if let Some(key_led) = maybe_key_led {
                 Some(Background::Color(Color::from_rgb8(
                     key_led.r, key_led.g, key_led.b,
                 )))
             } else {
-                Some(Background::Color(Color::WHITE))
+                Some(Background::Color(Color::BLACK))
             },
-            text_color: match maybe_key_led {
-                Some(key_led)
-                    if relative_luminance(key_led.r, key_led.g, key_led.b) > CONTRAST_THRESHOLD =>
-                {
-                    Color::BLACK
-                }
-
-                None => Color::BLACK,
-                _ => Color::WHITE,
+            text_color: if maybe_key_led.is_some_and(|key_led| {
+                relative_luminance(key_led.r, key_led.g, key_led.b) > CONTRAST_THRESHOLD
+            }) {
+                Color::BLACK
+            } else {
+                Color::WHITE
             },
             border: Border::default().rounded(4).width(0),
             ..Default::default()
@@ -58,8 +70,12 @@ fn key_button<'a>(key: &'a KeyIdData, device_storage: &'a DeviceStorage) -> Butt
             width.into()
         } else {
             Length::Shrink
-        })
-        .on_press(Message::OnPressOpenKeyModal(key.clone()))
+        });
+
+    mouse_area(button)
+        .on_press(Message::OnPressFillColor(key.id))
+        .on_right_press(Message::OnPressOpenKeyModal(key.clone()))
+        .into()
 }
 
 impl Default for UiShell {
@@ -75,11 +91,25 @@ fn relative_luminance(r: u8, g: u8, b: u8) -> f64 {
 
 impl UiShell {
     pub fn new() -> Self {
+        let device_storage = DeviceStorage::from_file();
+        let mut color_swatches = vec![Color::BLACK];
+
+        color_swatches.extend(
+            device_storage
+                .color_swatches
+                .iter()
+                .map(|color| Color::from_rgb8(color.r, color.g, color.b)),
+        );
+
         Self {
-            device_storage: DeviceStorage::from_file(),
+            device_storage,
             device_template: DeviceTemplate::from_file("f75.json"),
+            device_interface: DeviceInterface::new(),
             key_modal: None,
             key_led_rgb_hex: String::new(),
+            color_swatches,
+            selected_color: Color::BLACK,
+            swatch_color_rgb_hex: String::new(),
         }
     }
 
@@ -110,6 +140,27 @@ impl UiShell {
         container
     }
 
+    fn swatch_color_button(color: &'_ Color, is_selected: bool) -> Element<'_, Message> {
+        button("")
+            .width(24)
+            .height(24)
+            .style(move |_, _| button::Style {
+                background: Some(Background::Color(color.clone())),
+                border: if is_selected {
+                    Border {
+                        color: Color::WHITE,
+                        width: 2.0,
+                        ..Default::default()
+                    }
+                } else {
+                    Border::default()
+                },
+                ..Default::default()
+            })
+            .on_press(Message::OnPressSelectSwatchColor(color.clone()))
+            .into()
+    }
+
     fn view(&self) -> Element<'_, Message> {
         let mut stack = Stack::new();
 
@@ -124,16 +175,40 @@ impl UiShell {
             row.spacing(12).into()
         }))
         .spacing(12)
-        .padding(12)
+        // .height(Length::Shrink)
+        // .width(Length::Shrink)
         .into();
 
-        stack = stack.push(keys_column);
+        let buttons_column: Element<_> = row![
+            button("Save").on_press(Message::OnPressSaveChanges),
+            button("Apply").on_press(Message::OnPressApplyChanges),
+        ]
+        .spacing(12)
+        .into();
+
+        let swatches_column = row!(
+            text_input("#000000", &self.swatch_color_rgb_hex)
+                .on_input(|value| Message::OnInputSwatchColorRgbHex(value))
+                .width(128),
+            button("+").on_press(Message::OnPressAddSwatchColor)
+        )
+        .extend(
+            self.color_swatches
+                .iter()
+                .map(|color| Self::swatch_color_button(color, &self.selected_color == color)),
+        )
+        .spacing(12);
+
+        let main_column = column![buttons_column, swatches_column, keys_column]
+            .spacing(12)
+            .padding(12);
+        stack = stack.push(main_column);
 
         if let Some(key) = &self.key_modal {
             stack = stack.push(UiShell::key_modal(key, &self.key_led_rgb_hex));
         }
 
-        stack.width(Length::Fill).height(Length::Fill).into()
+        stack.width(Length::Shrink).height(Length::Shrink).into()
     }
 
     fn update(&mut self, message: Message) {
@@ -163,7 +238,6 @@ impl UiShell {
 
                 if let Ok(hex) = maybe_hex {
                     self.device_storage.set_key_led(key.id, hex.r, hex.g, hex.b);
-                    self.device_storage.flush().unwrap();
                     // todo: handle error
                 }
 
@@ -172,6 +246,43 @@ impl UiShell {
 
             Message::OnPressSaveChanges => {
                 self.device_storage.flush().unwrap();
+            }
+
+            Message::OnPressApplyChanges => {
+                self.device_interface.open(0, 0).unwrap();
+                self.device_interface
+                    .save_key_leds(&self.device_storage, &self.device_template);
+            }
+
+            Message::OnPressFillColor(key_id) => {
+                let color = &self.selected_color;
+                self.device_storage.set_key_led(
+                    key_id,
+                    (color.r * 255.0) as u8,
+                    (color.g * 255.0) as u8,
+                    (color.b * 255.0) as u8,
+                );
+            }
+
+            Message::OnInputSwatchColorRgbHex(value) => {
+                self.swatch_color_rgb_hex = value;
+            }
+
+            Message::OnPressAddSwatchColor => {
+                let maybe_hex = HexColor::parse_rgb(&self.swatch_color_rgb_hex);
+
+                // todo: handle invalid input
+                if let Ok(hex) = maybe_hex {
+                    self.color_swatches
+                        .push(Color::from_rgb8(hex.r, hex.g, hex.b));
+                    self.device_storage
+                        .add_color_swatch(RgbData::new(hex.r, hex.g, hex.b));
+                    self.swatch_color_rgb_hex = String::new();
+                }
+            }
+
+            Message::OnPressSelectSwatchColor(color) => {
+                self.selected_color = color;
             }
         }
     }

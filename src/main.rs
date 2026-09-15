@@ -1,3 +1,4 @@
+mod device_interface;
 mod device_storage;
 mod device_template;
 mod key_data;
