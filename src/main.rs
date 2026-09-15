@@ -9,6 +9,6 @@ mod ui;
 use ui::UiShell;
 
 fn main() {
-    let mut ui = UiShell::new();
+    let mut ui = UiShell::new().unwrap();
     ui.bootstrap().unwrap();
 }

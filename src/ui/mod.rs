@@ -6,15 +6,19 @@ use iced::{
     },
 };
 
+mod message;
+use message::Message;
+
 use crate::{
     device_interface::DeviceInterface,
     device_storage::{DeviceStorage, rgb_data::RgbData},
     device_template::DeviceTemplate,
-    key_id::KeyId,
     key_id_data::KeyIdData,
 };
 
 pub struct UiShell {
+    error_message: Option<String>,
+
     device_storage: DeviceStorage,
     device_template: DeviceTemplate,
     device_interface: DeviceInterface,
@@ -25,20 +29,6 @@ pub struct UiShell {
 
     key_modal: Option<KeyIdData>,
     key_led_rgb_hex: String,
-}
-
-#[derive(Clone)]
-enum Message {
-    OnPressOpenKeyModal(KeyIdData),
-    OnPressCloseKeyModal,
-    OnInputKeyLedRgbHex(String),
-    OnPressSaveKey,
-    OnPressSaveChanges,
-    OnPressApplyChanges,
-    OnPressFillColor(KeyId),
-    OnInputSwatchColorRgbHex(String),
-    OnPressAddSwatchColor,
-    OnPressSelectSwatchColor(Color),
 }
 
 const CONTRAST_THRESHOLD: f64 = 0.2;
@@ -80,7 +70,7 @@ fn key_button<'a>(key: &'a KeyIdData, device_storage: &'a DeviceStorage) -> Elem
 
 impl Default for UiShell {
     fn default() -> Self {
-        Self::new()
+        Self::new().expect("couldn't initialize UI shell")
     }
 }
 
@@ -90,8 +80,12 @@ fn relative_luminance(r: u8, g: u8, b: u8) -> f64 {
 }
 
 impl UiShell {
-    pub fn new() -> Self {
-        let device_storage = DeviceStorage::from_file();
+    pub fn new() -> Result<Self, String> {
+        // todo: de-hardcode
+        let device_storage = DeviceStorage::from_file().map_err(|err| err.to_string())?;
+        let device_template =
+            DeviceTemplate::from_file("f75.json").map_err(|err| err.to_string())?;
+
         let mut color_swatches = vec![Color::BLACK];
 
         color_swatches.extend(
@@ -101,16 +95,17 @@ impl UiShell {
                 .map(|color| Color::from_rgb8(color.r, color.g, color.b)),
         );
 
-        Self {
+        Ok(Self {
+            error_message: None,
             device_storage,
-            device_template: DeviceTemplate::from_file("f75.json"),
+            device_template,
             device_interface: DeviceInterface::new(),
             key_modal: None,
             key_led_rgb_hex: String::new(),
             color_swatches,
             selected_color: Color::BLACK,
             swatch_color_rgb_hex: String::new(),
-        }
+        })
     }
 
     fn key_modal<'a>(key: &'a KeyIdData, led_rgb_hex: &'a str) -> Element<'a, Message> {
@@ -199,9 +194,15 @@ impl UiShell {
         )
         .spacing(12);
 
-        let main_column = column![buttons_column, swatches_column, keys_column]
+        let main_column = column![buttons_column, swatches_column, keys_column,]
             .spacing(12)
-            .padding(12);
+            .padding(12)
+            .push(if let Some(msg) = &self.error_message {
+                text(format!("error: {msg}")).color(Color::from_rgb8(255, 0, 0))
+            } else {
+                text("")
+            });
+
         stack = stack.push(main_column);
 
         if let Some(key) = &self.key_modal {
@@ -212,6 +213,10 @@ impl UiShell {
     }
 
     fn update(&mut self, message: Message) {
+        if message.should_dismiss_messages() {
+            self.error_message = None;
+        }
+
         match message {
             Message::OnPressOpenKeyModal(key) => {
                 self.key_led_rgb_hex = String::new();
@@ -234,24 +239,34 @@ impl UiShell {
                     None => unreachable!(),
                 };
 
-                // todo: handle invalid input
-
                 if let Ok(hex) = maybe_hex {
                     self.device_storage.set_key_led(key.id, hex.r, hex.g, hex.b);
-                    // todo: handle error
+                } else {
+                    self.error_message =
+                        Some(format!("invalid color hex '{}'", self.key_led_rgb_hex).into());
                 }
 
                 self.key_modal = None;
             }
 
             Message::OnPressSaveChanges => {
-                self.device_storage.flush().unwrap();
+                if let Err(err) = self.device_storage.flush() {
+                    self.error_message = Some(err);
+                }
             }
 
             Message::OnPressApplyChanges => {
-                self.device_interface.open(0, 0).unwrap();
-                self.device_interface
-                    .save_key_leds(&self.device_storage, &self.device_template);
+                if let Err(err) = self.device_interface.open(0, 0) {
+                    self.error_message = Some(format!("device interface error: {}", err));
+                    return;
+                }
+
+                if let Err(err) = self
+                    .device_interface
+                    .save_key_leds(&self.device_storage, &self.device_template)
+                {
+                    self.error_message = Some(format!("device interface error: {}", err));
+                }
             }
 
             Message::OnPressFillColor(key_id) => {
@@ -271,13 +286,15 @@ impl UiShell {
             Message::OnPressAddSwatchColor => {
                 let maybe_hex = HexColor::parse_rgb(&self.swatch_color_rgb_hex);
 
-                // todo: handle invalid input
                 if let Ok(hex) = maybe_hex {
                     self.color_swatches
                         .push(Color::from_rgb8(hex.r, hex.g, hex.b));
                     self.device_storage
                         .add_color_swatch(RgbData::new(hex.r, hex.g, hex.b));
                     self.swatch_color_rgb_hex = String::new();
+                } else {
+                    self.error_message =
+                        Some(format!("invalid color hex '{}'", self.swatch_color_rgb_hex).into());
                 }
             }
 

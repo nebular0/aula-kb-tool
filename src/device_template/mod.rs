@@ -1,7 +1,12 @@
 use crate::{key_data::KeyData, key_id::KeyId, key_id_data::KeyIdData};
+
+use from_file_error::FromFileError;
+
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs};
+
+mod from_file_error;
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct DeviceTemplateJson {
@@ -17,14 +22,15 @@ impl DeviceTemplate {
         Self { keys: Vec::new() }
     }
 
-    pub fn from_file(filename: &'_ str) -> Self {
-        // todo: fix unwrap
-        let file_content = fs::read_to_string(filename).unwrap();
-        let json = serde_json::from_str::<DeviceTemplateJson>(file_content.as_str()).unwrap();
+    pub fn from_file(filename: &'_ str) -> Result<Self, FromFileError> {
+        let file_content =
+            fs::read_to_string(filename).map_err(|err| FromFileError::IoError(err))?;
+        let json = serde_json::from_str::<DeviceTemplateJson>(file_content.as_str())
+            .map_err(|err| FromFileError::ParseError(err))?;
 
-        Self {
+        Ok(Self {
             keys: Self::sort_keys(json),
-        }
+        })
     }
 
     fn sort_keys(json: DeviceTemplateJson) -> Vec<Vec<KeyIdData>> {

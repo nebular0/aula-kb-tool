@@ -30,7 +30,7 @@ impl DeviceInterface {
         &mut self,
         device_storage: &DeviceStorage,
         device_template: &DeviceTemplate,
-    ) {
+    ) -> Result<(), HidError> {
         let device = if let Some(device) = &self.device {
             device
         } else {
@@ -48,8 +48,7 @@ impl DeviceInterface {
             }
         }
 
-        device.send_feature_report(&report).unwrap();
-        // todo: handle error
+        device.send_feature_report(&report)
     }
 }
 
