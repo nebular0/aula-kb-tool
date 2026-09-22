@@ -1,29 +1,51 @@
+mod aula_id;
+pub mod device_info;
+
 use crate::{device_storage::DeviceStorage, device_template::DeviceTemplate};
-use hidapi::{DeviceInfo, HidApi, HidDevice, HidError};
+use aula_id::AulaId;
+use device_info::DeviceInfo;
+
+use hidapi::{HidApi, HidDevice, HidError};
+use std::{ffi::CStr, fs};
 
 pub struct DeviceInterface {
     device: Option<HidDevice>,
     hid_api: HidApi,
+    aula_ids: Vec<AulaId>,
 }
+
+const AULA_IDS_FILENAME: &str = "aula_ids.json";
 
 impl DeviceInterface {
     pub fn new() -> Self {
+        let aula_ids_content =
+            fs::read_to_string(AULA_IDS_FILENAME).expect("couldn't open device identifiers file");
+        let aula_ids = serde_json::from_str::<Vec<AulaId>>(&aula_ids_content)
+            .expect("couldn't parse device identifiers file");
+
         Self {
             device: None,
             hid_api: HidApi::new().unwrap(),
+            aula_ids,
         }
     }
 
-    pub fn open(&mut self, vendor_id: u16, product_id: u16) -> Result<(), HidError> {
-        // todo: de-hardcode
-        self.hid_api.open_path(c"/dev/hidraw2").map(|device| {
-            self.device = Some(device);
-            ()
-        })
+    pub fn open(&mut self, path: String) -> Result<(), HidError> {
+        self.hid_api
+            .open_path(unsafe { CStr::from_ptr(path.as_ptr() as *const i8) })
+            .map(|device| {
+                self.device = Some(device);
+                ()
+            })
     }
 
-    pub fn list_devices(&self) -> impl Iterator<Item = &DeviceInfo> {
-        self.hid_api.device_list()
+    pub fn list_devices(&self) -> impl Iterator<Item = DeviceInfo> {
+        self.hid_api.device_list().map(|d| DeviceInfo::from(d))
+        // .filter(|d| {
+        //     self.aula_ids
+        //         .iter()
+        //         .any(|id| (d.product_id, d.vendor_id) == (id.product_id, id.vendor_id))
+        // })
     }
 
     pub fn save_key_leds(

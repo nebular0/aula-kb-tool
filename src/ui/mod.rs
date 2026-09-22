@@ -2,7 +2,8 @@ use hex_color::HexColor;
 use iced::{
     Background, Border, Color, Element, Font, Length,
     widget::{
-        Column, Row, Stack, button, center, column, container, mouse_area, row, text, text_input,
+        Column, Row, Stack, button, center, column, container, mouse_area, pick_list, row, text,
+        text_input,
     },
 };
 
@@ -10,7 +11,7 @@ mod message;
 use message::Message;
 
 use crate::{
-    device_interface::DeviceInterface,
+    device_interface::{DeviceInterface, device_info::DeviceInfo},
     device_storage::{DeviceStorage, rgb_data::RgbData},
     device_template::DeviceTemplate,
     key_id_data::KeyIdData,
@@ -22,6 +23,7 @@ pub struct UiShell {
     device_storage: DeviceStorage,
     device_template: DeviceTemplate,
     device_interface: DeviceInterface,
+    opened_device: Option<DeviceInfo>,
 
     color_swatches: Vec<Color>,
     selected_color: Color,
@@ -81,11 +83,7 @@ fn relative_luminance(r: u8, g: u8, b: u8) -> f64 {
 
 impl UiShell {
     pub fn new() -> Result<Self, String> {
-        // todo: de-hardcode
         let device_storage = DeviceStorage::from_file().map_err(|err| err.to_string())?;
-        let device_template =
-            DeviceTemplate::from_file("f75.json").map_err(|err| err.to_string())?;
-
         let mut color_swatches = vec![Color::BLACK];
 
         color_swatches.extend(
@@ -98,8 +96,9 @@ impl UiShell {
         Ok(Self {
             error_message: None,
             device_storage,
-            device_template,
+            device_template: DeviceTemplate::new(),
             device_interface: DeviceInterface::new(),
+            opened_device: None,
             key_modal: None,
             key_led_rgb_hex: String::new(),
             color_swatches,
@@ -170,8 +169,14 @@ impl UiShell {
             row.spacing(12).into()
         }))
         .spacing(12)
-        // .height(Length::Shrink)
-        // .width(Length::Shrink)
+        .into();
+
+        let devices: Vec<_> = self.device_interface.list_devices().collect();
+
+        let config_column: Element<_> = pick_list(devices, self.opened_device.clone(), |device| {
+            Message::OnChangeOpenedDevice(device)
+        })
+        .placeholder("Select your keyboard")
         .into();
 
         let buttons_column: Element<_> = row![
@@ -194,7 +199,7 @@ impl UiShell {
         )
         .spacing(12);
 
-        let main_column = column![buttons_column, swatches_column, keys_column,]
+        let main_column = column![config_column, buttons_column, swatches_column, keys_column,]
             .spacing(12)
             .padding(12)
             .push(if let Some(msg) = &self.error_message {
@@ -256,11 +261,6 @@ impl UiShell {
             }
 
             Message::OnPressApplyChanges => {
-                if let Err(err) = self.device_interface.open(0, 0) {
-                    self.error_message = Some(format!("device interface error: {}", err));
-                    return;
-                }
-
                 if let Err(err) = self
                     .device_interface
                     .save_key_leds(&self.device_storage, &self.device_template)
@@ -300,6 +300,26 @@ impl UiShell {
 
             Message::OnPressSelectSwatchColor(color) => {
                 self.selected_color = color;
+            }
+
+            Message::OnChangeOpenedDevice(device) => {
+                let maybe_device_template = DeviceTemplate::from_file(
+                    format!("{}_{}.json", device.product_id, device.vendor_id).as_str(),
+                );
+
+                if let Err(err) = maybe_device_template {
+                    self.error_message = Some(err.to_string());
+                    return;
+                } else if let Ok(device_template) = maybe_device_template {
+                    self.device_template = device_template;
+                }
+
+                if let Err(err) = self.device_interface.open(device.path.clone()) {
+                    self.error_message = Some(format!("device interface error: {}", err));
+                    return;
+                }
+
+                self.opened_device = Some(device);
             }
         }
     }

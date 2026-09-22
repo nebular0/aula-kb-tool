@@ -1,6 +1,6 @@
 use iced::Color;
 
-use crate::{key_id::KeyId, key_id_data::KeyIdData};
+use crate::{device_interface::device_info::DeviceInfo, key_id::KeyId, key_id_data::KeyIdData};
 
 #[derive(Clone)]
 pub enum Message {
@@ -14,6 +14,7 @@ pub enum Message {
     OnInputSwatchColorRgbHex(String),
     OnPressAddSwatchColor,
     OnPressSelectSwatchColor(Color),
+    OnChangeOpenedDevice(DeviceInfo),
 }
 
 impl Message {
