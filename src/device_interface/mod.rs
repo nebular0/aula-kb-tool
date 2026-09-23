@@ -40,12 +40,14 @@ impl DeviceInterface {
     }
 
     pub fn list_devices(&self) -> impl Iterator<Item = DeviceInfo> {
-        self.hid_api.device_list().map(|d| DeviceInfo::from(d))
-        // .filter(|d| {
-        //     self.aula_ids
-        //         .iter()
-        //         .any(|id| (d.product_id, d.vendor_id) == (id.product_id, id.vendor_id))
-        // })
+        self.hid_api
+            .device_list()
+            .map(|d| DeviceInfo::from(d))
+            .filter(|d| {
+                self.aula_ids
+                    .iter()
+                    .any(|id| (d.product_id, d.vendor_id) == (id.product_id, id.vendor_id))
+            })
     }
 
     pub fn save_key_leds(
@@ -59,20 +61,20 @@ impl DeviceInterface {
             unreachable!()
         };
 
+        let report_start = device_template.report_start;
+        let report_offset = device_template.report_offset;
+
         let mut report: [u8; 512] = [0; 512];
-        report[..8].copy_from_slice(&[0x06, 0x06, 0x00, 0x00, 0x01, 0x00, 0x80, 0x01]);
+        report[..report_start].copy_from_slice(&[0x06, 0x06, 0x00, 0x00, 0x01, 0x00, 0x80, 0x01]);
 
         for key in device_template.keys.iter().flatten() {
             if let Some(key_led) = device_storage.get_key_led(key.id) {
-                report[START + key.led_idx] = key_led.r;
-                report[START + key.led_idx + OFFSET] = key_led.g;
-                report[START + key.led_idx + OFFSET + OFFSET] = key_led.b;
+                report[report_start + key.led_idx] = key_led.r;
+                report[report_start + key.led_idx + report_offset] = key_led.g;
+                report[report_start + key.led_idx + report_offset + report_offset] = key_led.b;
             }
         }
 
         device.send_feature_report(&report)
     }
 }
-
-const START: usize = 8;
-const OFFSET: usize = 126;

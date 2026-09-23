@@ -10,16 +10,24 @@ mod from_file_error;
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct DeviceTemplateJson {
+    pub report_start: usize,
+    pub report_offset: usize,
     pub keys: HashMap<KeyId, KeyData>,
 }
 
 pub struct DeviceTemplate {
+    pub report_start: usize,
+    pub report_offset: usize,
     pub keys: Vec<Vec<KeyIdData>>,
 }
 
 impl DeviceTemplate {
     pub fn new() -> Self {
-        Self { keys: Vec::new() }
+        Self {
+            report_start: 0,
+            report_offset: 0,
+            keys: Vec::new(),
+        }
     }
 
     pub fn from_file(filename: &'_ str) -> Result<Self, FromFileError> {
@@ -29,6 +37,8 @@ impl DeviceTemplate {
             .map_err(|err| FromFileError::ParseError(err))?;
 
         Ok(Self {
+            report_start: json.report_start,
+            report_offset: json.report_offset,
             keys: Self::sort_keys(json),
         })
     }

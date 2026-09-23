@@ -34,6 +34,7 @@ pub struct UiShell {
 }
 
 const CONTRAST_THRESHOLD: f64 = 0.2;
+const TEMPLATES_PATH: &'static str = "templates";
 
 fn key_button<'a>(key: &'a KeyIdData, device_storage: &'a DeviceStorage) -> Element<'a, Message> {
     let maybe_key_led = device_storage.get_key_led(key.id);
@@ -83,7 +84,7 @@ fn relative_luminance(r: u8, g: u8, b: u8) -> f64 {
 
 impl UiShell {
     pub fn new() -> Result<Self, String> {
-        let device_storage = DeviceStorage::from_file().map_err(|err| err.to_string())?;
+        let device_storage = DeviceStorage::from_file().unwrap_or(DeviceStorage::new());
         let mut color_swatches = vec![Color::BLACK];
 
         color_swatches.extend(
@@ -136,8 +137,8 @@ impl UiShell {
 
     fn swatch_color_button(color: &'_ Color, is_selected: bool) -> Element<'_, Message> {
         button("")
-            .width(24)
-            .height(24)
+            .width(18)
+            .height(18)
             .style(move |_, _| button::Style {
                 background: Some(Background::Color(color.clone())),
                 border: if is_selected {
@@ -304,7 +305,11 @@ impl UiShell {
 
             Message::OnChangeOpenedDevice(device) => {
                 let maybe_device_template = DeviceTemplate::from_file(
-                    format!("{}_{}.json", device.product_id, device.vendor_id).as_str(),
+                    format!(
+                        "{}/{}_{}.json",
+                        TEMPLATES_PATH, device.product_id, device.vendor_id
+                    )
+                    .as_str(),
                 );
 
                 if let Err(err) = maybe_device_template {

@@ -1,4 +1,6 @@
 {
+    "report_start": 8,
+    "report_offset": 126,
     "keys": {
         "27": {
             "name": "Esc",
