@@ -2,7 +2,7 @@
 
 Cross-platform tool for configuring Aula keyboards. This project aims to become a replacement for the proprietary and Windows-only Aula app.
 
-![user interface](https://raw.githubusercontent.com/nebular0/aula-kb-tool/assets/screenshot.png)
+![user interface](https://raw.githubusercontent.com/nebular0/aula-kb-tool/refs/heads/main/assets/screenshot.png)
 
 ## List of features (roadmap)
 - Static RGB lighting: done ✅
